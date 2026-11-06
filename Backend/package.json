@@ -1,0 +1,35 @@
+{
+  "name": "ticket-triage-service",
+  "version": "1.0.0",
+  "description": "AI Support Ticket Triage Service backend",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js",
+    "worker": "nodemon src/workers/ticketWorker.js",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:deploy": "prisma migrate deploy"
+  },
+  "keywords": [
+    "ticket-triage",
+    "express",
+    "prisma",
+    "postgresql",
+    "neon"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@prisma/client": "^5.22.0",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "groq-sdk": "^1.6.0"
+  },
+  "devDependencies": {
+    "prisma": "^5.22.0"
+  },
+  "prisma": {
+    "schema": "database/schema.prisma"
+  }
+}

@@ -1,0 +1,77 @@
+// Prisma Schema for AI Support Ticket Triage Service
+// Database: PostgreSQL (Neon Cloud)
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum TicketStatus {
+  pending
+  processing
+  retry_wait
+  completed
+  needs_review
+}
+
+enum TicketCategory {
+  billing
+  technical
+  account
+  feedback
+  other
+}
+
+enum TicketPriority {
+  low
+  medium
+  high
+  urgent
+}
+
+model Ticket {
+  id            String        @id @default(uuid()) @db.Uuid
+  subject       String        @db.VarChar(255)
+  body          String        @db.Text
+  customerEmail String        @map("customer_email") @db.VarChar(255)
+  status        TicketStatus  @default(pending)
+  retryCount    Int           @default(0) @map("retry_count")
+  nextRetryAt   DateTime?     @map("next_retry_at") @db.Timestamptz
+  lockedAt      DateTime?     @map("locked_at") @db.Timestamptz
+  createdAt     DateTime      @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime      @updatedAt @map("updated_at") @db.Timestamptz
+  triageResult  TriageResult?
+
+  @@index([status])
+  @@index([status, createdAt])
+  @@index([status, nextRetryAt])
+  @@map("tickets")
+}
+
+model TriageResult {
+  id        String         @id @default(uuid()) @db.Uuid
+  ticketId  String         @unique @map("ticket_id") @db.Uuid
+  category  TicketCategory
+  priority  TicketPriority
+  summary   String         @db.Text
+  createdAt DateTime       @default(now()) @map("created_at") @db.Timestamptz
+
+  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@map("triage_results")
+}
+
+model TriageCache {
+  id        String         @id @default(uuid()) @db.Uuid
+  cacheKey  String         @unique @map("cache_key") @db.VarChar(64)
+  category  TicketCategory
+  priority  TicketPriority
+  summary   String         @db.Text
+  createdAt DateTime       @default(now()) @map("created_at") @db.Timestamptz
+
+  @@map("triage_cache")
+}
