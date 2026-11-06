@@ -1,0 +1,110 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1280" viewBox="0 0 1200 1280">
+  <title>AI Support Ticket Triage Service Architecture</title>
+  <desc>Architecture diagram showing customer ticket submission through an Express API, PostgreSQL storage, and asynchronous background triage with caching, LLM validation, and retry handling.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,4.5 L0,9" fill="none" stroke="#b8b8b8" stroke-width="1.2"/>
+    </marker>
+    <style>
+      .group { fill:#303030; stroke:#454545; stroke-width:1.4; }
+      .node { fill:#00345c; stroke:#075080; stroke-width:1.4; }
+      .pill { fill:#050505; stroke:#075080; stroke-width:1.4; }
+      .db { fill:#00345c; stroke:#075080; stroke-width:1.4; }
+      .heading { fill:#e8e8e8; font: 20px Arial, sans-serif; }
+      .label { fill:#a9d4ff; font: 600 16px Arial, sans-serif; }
+      .edge-label { fill:#a9d4ff; font: 600 14px Arial, sans-serif; }
+      .line { fill:none; stroke:#b8b8b8; stroke-width:1.45; marker-end:url(#arrow); }
+      .dashed { fill:none; stroke:#b8b8b8; stroke-width:1.35; stroke-dasharray:4 3; marker-end:url(#arrow); }
+    </style>
+  </defs>
+
+  <rect width="1200" height="1280" fill="#050505"/>
+
+  <!-- Background processing group -->
+  <rect class="group" x="215" y="35" width="312" height="615"/>
+  <text class="heading" x="371" y="61" text-anchor="middle">Background Processing</text>
+
+  <rect class="node" x="255" y="82" width="232" height="70" rx="20"/>
+  <text class="label" x="371" y="123" text-anchor="middle">Background Worker</text>
+
+  <rect class="node" x="277" y="187" width="188" height="70" rx="20"/>
+  <text class="label" x="371" y="228" text-anchor="middle">Triage Service</text>
+
+  <rect class="node" x="277" y="292" width="188" height="70" rx="20"/>
+  <text class="label" x="371" y="333" text-anchor="middle">Cache Service</text>
+
+  <rect class="pill" x="319" y="398" width="104" height="30" rx="15"/>
+  <text class="edge-label" x="371" y="418" text-anchor="middle">Cache Miss</text>
+
+  <rect class="node" x="229" y="463" width="284" height="70" rx="20"/>
+  <text class="label" x="371" y="504" text-anchor="middle">LLM Provider (Fake / Groq)</text>
+
+  <rect class="node" x="261" y="568" width="220" height="70" rx="20"/>
+  <text class="label" x="371" y="609" text-anchor="middle">Validate Response</text>
+
+  <!-- Main worker flow -->
+  <path class="line" d="M371 65 V80"/>
+  <path class="line" d="M371 152 V185"/>
+  <path class="line" d="M371 257 V290"/>
+  <path class="line" d="M371 362 V396"/>
+  <path class="line" d="M371 428 V461"/>
+  <path class="line" d="M371 533 V566"/>
+
+  <!-- Success path to database -->
+  <path class="line" d="M334 638 V700 H190 V1142 H380 V1172"/>
+  <rect class="pill" x="150" y="900" width="80" height="30" rx="15"/>
+  <text class="edge-label" x="190" y="920" text-anchor="middle">Success</text>
+
+  <!-- Failure path -->
+  <path class="line" d="M408 638 V704"/>
+  <rect class="pill" x="371" y="675" width="74" height="30" rx="15"/>
+  <text class="edge-label" x="408" y="695" text-anchor="middle">Failure</text>
+
+  <rect class="node" x="277" y="720" width="262" height="72" rx="20"/>
+  <text class="label" x="408" y="762" text-anchor="middle">Retry / Failure Handling</text>
+  <path class="line" d="M408 792 V1082"/>
+  <rect class="pill" x="286" y="1000" width="244" height="32" rx="16"/>
+  <text class="edge-label" x="408" y="1021" text-anchor="middle">Schedule retry / Manual review</text>
+
+  <!-- Client and API group -->
+  <rect class="node" x="974" y="590" width="216" height="70" rx="20"/>
+  <text class="label" x="1082" y="631" text-anchor="middle">Customer / Client</text>
+
+  <rect class="group" x="756" y="802" width="274" height="230"/>
+  <text class="heading" x="893" y="829" text-anchor="middle">API Layer</text>
+
+  <rect class="node" x="803" y="842" width="212" height="70" rx="20"/>
+  <text class="label" x="909" y="883" text-anchor="middle">Express REST API</text>
+
+  <rect class="node" x="770" y="947" width="208" height="70" rx="20"/>
+  <text class="label" x="874" y="988" text-anchor="middle">Ticket Controller</text>
+
+  <path class="line" d="M1082 660 V770 H909 V840"/>
+  <rect class="pill" x="882" y="718" width="120" height="30" rx="15"/>
+  <text class="edge-label" x="942" y="738" text-anchor="middle">Submit Ticket</text>
+
+  <path class="line" d="M909 912 V945"/>
+  <path class="line" d="M874 1017 V1118 H466 V1172"/>
+  <rect class="pill" x="785" y="1074" width="176" height="30" rx="15"/>
+  <text class="edge-label" x="873" y="1094" text-anchor="middle">Create pending ticket</text>
+
+  <!-- API read path -->
+  <path class="dashed" d="M756 917 H650 V1128 H496 V1172"/>
+  <rect class="pill" x="584" y="1084" width="126" height="30" rx="15"/>
+  <text class="edge-label" x="647" y="1104" text-anchor="middle">Read requests</text>
+
+  <path class="dashed" d="M978 982 H1018 V730 H1118 V662"/>
+  <rect class="pill" x="1028" y="704" width="178" height="30" rx="15"/>
+  <text class="edge-label" x="1117" y="724" text-anchor="middle">Ticket details / Results</text>
+
+  <!-- Worker polling path -->
+  <path class="line" d="M319 1178 H90 V18 H371 V80"/>
+  <rect class="pill" x="8" y="706" width="160" height="32" rx="16"/>
+  <text class="edge-label" x="88" y="727" text-anchor="middle">Pick pending ticket</text>
+
+  <!-- Database -->
+  <path class="db" d="M320 1192 C320 1177 360 1165 408 1165 C456 1165 496 1177 496 1192 V1240 C496 1255 456 1267 408 1267 C360 1267 320 1255 320 1240 Z"/>
+  <ellipse class="db" cx="408" cy="1192" rx="88" ry="27"/>
+  <path d="M320 1192 V1240 C320 1255 360 1267 408 1267 C456 1267 496 1255 496 1240 V1192" fill="none" stroke="#075080" stroke-width="1.4"/>
+  <text class="label" x="408" y="1237" text-anchor="middle">PostgreSQL Database</text>
+</svg>
